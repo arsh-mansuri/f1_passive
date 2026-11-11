@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   AmbientIcon,
   ArrowLeftIcon,
@@ -31,9 +32,9 @@ type RaceControlsProps = {
 const SPEEDS: PlaybackSpeed[] = [1, 2, 4];
 
 function iconButtonClass(active = false): string {
-  return `grid h-9 w-9 place-items-center rounded-xl border transition-colors ${
+  return `grid h-8 w-8 place-items-center rounded-xl border transition-all duration-300 hover:-translate-y-0.5 sm:h-9 sm:w-9 ${
     active
-      ? "border-pit-red/40 bg-pit-red/10 text-pit-red"
+      ? "border-pit-red/40 bg-pit-red/10 text-pit-red shadow-red-glow-sm"
       : "border-transparent text-white/45 hover:border-white/10 hover:bg-white/[0.05] hover:text-white"
   }`;
 }
@@ -80,7 +81,12 @@ export function RaceControls({
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-4 sm:px-6 sm:pb-6">
-      <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-white/[0.09] bg-[#0d0d0d]/85 px-2 py-2 shadow-card backdrop-blur-xl">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="edge-glow pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl border border-white/[0.09] bg-[#0d0d0d]/85 px-1.5 py-1.5 shadow-card backdrop-blur-xl sm:gap-1.5 sm:px-2 sm:py-2"
+      >
         <Link
           href="/dashboard"
           title="Back to the paddock"
@@ -90,7 +96,7 @@ export function RaceControls({
           <ArrowLeftIcon className="h-4 w-4" />
         </Link>
 
-        <span className="mx-0.5 h-6 w-px bg-white/[0.08]" />
+        <span className="mx-0.5 hidden h-6 w-px bg-white/[0.08] sm:block" />
 
         <button
           type="button"
@@ -98,12 +104,12 @@ export function RaceControls({
           disabled={finished}
           title={playing ? "Pause (space)" : "Play (space)"}
           aria-label={playing ? "Pause" : "Play"}
-          className="grid h-10 w-10 place-items-center rounded-full bg-pit-red text-white shadow-red-glow-sm transition-all duration-200 hover:bg-[#ff1a12] disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-shine grid h-9 w-9 place-items-center rounded-full bg-pit-red text-white shadow-red-glow-sm transition-all duration-300 hover:scale-105 hover:bg-[#ff1a12] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 sm:h-10 sm:w-10"
         >
           {playing ? (
-            <PauseIcon className="h-4 w-4" />
+            <PauseIcon className="relative z-[2] h-4 w-4" />
           ) : (
-            <PlayIcon className="ml-0.5 h-4 w-4" />
+            <PlayIcon className="relative z-[2] ml-0.5 h-4 w-4" />
           )}
         </button>
 
@@ -120,7 +126,7 @@ export function RaceControls({
         <form
           onSubmit={handleLapSubmit}
           title={`Jump to lap (1-${laps})`}
-          className="flex items-center gap-1 rounded-xl border border-white/[0.06] bg-black/30 px-2 py-1"
+          className="hidden items-center gap-1 rounded-xl border border-white/[0.06] bg-black/30 px-2 py-1 sm:flex"
         >
           <label
             htmlFor="lap-jump"
@@ -151,7 +157,7 @@ export function RaceControls({
           </button>
         </form>
 
-        <span className="mx-0.5 h-6 w-px bg-white/[0.08]" />
+        <span className="mx-0.5 hidden h-6 w-px bg-white/[0.08] sm:block" />
 
         <div className="flex items-center gap-0.5 rounded-xl border border-white/[0.06] bg-black/30 p-0.5">
           {SPEEDS.map((value) => (
@@ -162,9 +168,9 @@ export function RaceControls({
               title={`${value}x speed`}
               aria-label={`Set speed to ${value}x`}
               aria-pressed={speed === value}
-              className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold tabular-nums transition-colors ${
+              className={`rounded-lg px-1.5 py-1.5 text-[10px] font-semibold tabular-nums transition-all duration-300 sm:px-2.5 ${
                 speed === value
-                  ? "bg-white text-black"
+                  ? "scale-105 bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.18)]"
                   : "text-white/35 hover:text-white/75"
               }`}
             >
@@ -173,7 +179,7 @@ export function RaceControls({
           ))}
         </div>
 
-        <span className="mx-0.5 h-6 w-px bg-white/[0.08]" />
+        <span className="mx-0.5 hidden h-6 w-px bg-white/[0.08] sm:block" />
 
         <button
           type="button"
@@ -196,7 +202,7 @@ export function RaceControls({
         >
           <PanelIcon className="h-4 w-4" />
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 }

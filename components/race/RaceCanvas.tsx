@@ -3,6 +3,7 @@
 import {
   forwardRef,
   useCallback,
+  useId,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -36,6 +37,15 @@ const POSITION_SPACING = 0.0072;
 
 export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
   function RaceCanvas({ race, className = "" }, ref) {
+    const rawId = useId();
+    const uid = useMemo(() => rawId.replace(/[^a-zA-Z0-9]/g, ""), [rawId]);
+    const bgId = `race-bg-${uid}`;
+    const haloId = `race-halo-${uid}`;
+    const gridId = `race-grid-${uid}`;
+    const shadowId = `track-shadow-${uid}`;
+    const dotGlowId = `dot-glow-${uid}`;
+    const cometGlowId = `comet-glow-${uid}`;
+
     const geometry = useMemo(
       () => buildTrackGeometry(race.trackPoints),
       [race.trackPoints],
@@ -155,18 +165,18 @@ export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
           aria-label={`${race.circuit} circuit with live driver positions`}
         >
           <defs>
-            <radialGradient id="race-bg" cx="50%" cy="48%" r="68%">
-              <stop offset="0%" stopColor="#121212" />
+            <radialGradient id={bgId} cx="50%" cy="48%" r="68%">
+              <stop offset="0%" stopColor="#131313" />
               <stop offset="62%" stopColor="#0b0b0b" />
               <stop offset="100%" stopColor="#070707" />
             </radialGradient>
-            <radialGradient id="race-halo" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#E10600" stopOpacity="0.075" />
-              <stop offset="68%" stopColor="#E10600" stopOpacity="0.018" />
+            <radialGradient id={haloId} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#E10600" stopOpacity="0.085" />
+              <stop offset="68%" stopColor="#E10600" stopOpacity="0.02" />
               <stop offset="100%" stopColor="#E10600" stopOpacity="0" />
             </radialGradient>
             <pattern
-              id="race-grid"
+              id={gridId}
               width="56"
               height="56"
               patternUnits="userSpaceOnUse"
@@ -179,17 +189,74 @@ export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
                 strokeWidth="1"
               />
             </pattern>
-            <filter id="track-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <filter
+              id={shadowId}
+              x="-20%"
+              y="-20%"
+              width="140%"
+              height="140%"
+            >
               <feGaussianBlur stdDeviation="10" />
             </filter>
-            <filter id="dot-glow" x="-200%" y="-200%" width="500%" height="500%">
+            <filter
+              id={dotGlowId}
+              x="-200%"
+              y="-200%"
+              width="500%"
+              height="500%"
+            >
               <feGaussianBlur stdDeviation="7" />
+            </filter>
+            <filter
+              id={cometGlowId}
+              x="-40%"
+              y="-40%"
+              width="180%"
+              height="180%"
+            >
+              <feGaussianBlur stdDeviation="4" />
             </filter>
           </defs>
 
-          <rect width="1000" height="1000" fill="url(#race-bg)" />
-          <rect width="1000" height="1000" fill="url(#race-grid)" opacity="0.65" />
-          <circle cx="500" cy="500" r="480" fill="url(#race-halo)" />
+          <rect width="1000" height="1000" fill={`url(#${bgId})`} />
+          <rect
+            width="1000"
+            height="1000"
+            fill={`url(#${gridId})`}
+            opacity="0.65"
+          />
+          <circle cx="500" cy="500" r="480" fill={`url(#${haloId})`} />
+
+          <g
+            className="animate-spin-slow"
+            style={{ transformOrigin: "500px 500px" }}
+          >
+            <circle
+              cx="500"
+              cy="500"
+              r="438"
+              fill="none"
+              stroke="#E10600"
+              strokeOpacity="0.07"
+              strokeWidth="1"
+              strokeDasharray="2 20"
+            />
+          </g>
+          <g
+            className="animate-spin-slow-reverse"
+            style={{ transformOrigin: "500px 500px" }}
+          >
+            <circle
+              cx="500"
+              cy="500"
+              r="472"
+              fill="none"
+              stroke="#ffffff"
+              strokeOpacity="0.04"
+              strokeWidth="1"
+              strokeDasharray="1 30"
+            />
+          </g>
 
           <path
             d={pathD}
@@ -198,7 +265,7 @@ export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
             strokeWidth="34"
             strokeLinejoin="round"
             opacity="0.7"
-            filter="url(#track-shadow)"
+            filter={`url(#${shadowId})`}
           />
           <path
             d={pathD}
@@ -222,6 +289,19 @@ export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
             strokeLinecap="round"
             strokeDasharray="2 16"
             opacity="0.8"
+            className="racing-dash"
+          />
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#E10600"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeOpacity="0.85"
+            pathLength={1}
+            filter={`url(#${cometGlowId})`}
+            className="track-comet"
           />
 
           <line
@@ -271,7 +351,7 @@ export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
                   r={isHovered ? 19 : 16}
                   fill={driver.color}
                   opacity={isHovered ? 0.26 : 0.13}
-                  filter="url(#dot-glow)"
+                  filter={`url(#${dotGlowId})`}
                 />
                 <circle
                   r="8.4"
@@ -286,22 +366,43 @@ export const RaceCanvas = forwardRef<RaceCanvasHandle, RaceCanvasProps>(
                   strokeWidth="1"
                   strokeOpacity={isHovered ? 0.65 : 0.18}
                 />
-                <text
-                  x="15"
-                  y="5"
-                  fontSize="24"
-                  fontWeight="700"
-                  letterSpacing="0.5"
-                  fill="#F5F5F5"
-                  stroke="#080808"
-                  strokeWidth="7"
-                  strokeLinejoin="round"
-                  paintOrder="stroke"
-                  opacity={isHovered ? 1 : 0}
-                  style={{ pointerEvents: "none" }}
-                >
-                  {driver.code}
-                </text>
+                {isHovered ? (
+                  <g
+                    transform="translate(18 -66)"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <rect
+                      width="158"
+                      height="52"
+                      rx="12"
+                      fill="#0b0b0b"
+                      stroke={driver.color}
+                      strokeOpacity="0.5"
+                      strokeWidth="1"
+                    />
+                    <rect
+                      x="0"
+                      y="12"
+                      width="3"
+                      height="28"
+                      rx="1.5"
+                      fill={driver.color}
+                    />
+                    <text
+                      x="14"
+                      y="24"
+                      fontSize="18"
+                      fontWeight="700"
+                      letterSpacing="0.6"
+                      fill="#F5F5F5"
+                    >
+                      {driver.code}
+                    </text>
+                    <text x="14" y="40" fontSize="11" fill="#8a8a8a">
+                      {driver.team}
+                    </text>
+                  </g>
+                ) : null}
               </g>
             );
           })}

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/Logo";
+import { ScrollDrift } from "@/components/ui/ScrollDrift";
 import { featuredRace } from "@/lib/catalog";
 import { buildPathD } from "@/lib/track";
 
@@ -20,7 +21,8 @@ export function AuthLayout({
   const trackPath = buildPathD(featured.trackPreview);
 
   return (
-    <main className="relative min-h-[100svh] overflow-hidden lg:grid lg:grid-cols-[1.02fr_0.98fr]">
+    <ScrollDrift>
+      <main className="relative min-h-[100svh] overflow-hidden lg:grid lg:grid-cols-[1.02fr_0.98fr]">
       <aside className="relative hidden overflow-hidden border-r border-white/[0.06] bg-[#080808] lg:flex lg:flex-col lg:justify-between">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 grid-lines opacity-60" />
@@ -109,6 +111,7 @@ export function AuthLayout({
           PitWall · Not affiliated with Formula 1
         </div>
       </section>
-    </main>
+      </main>
+    </ScrollDrift>
   );
 }

@@ -43,6 +43,21 @@ function typeClass(type: RaceEvent["type"]): string {
   }
 }
 
+function typeAccent(type: RaceEvent["type"]): string {
+  switch (type) {
+    case "lead_change":
+      return "border-l-pit-red/80";
+    case "pit":
+      return "border-l-amber-300/60";
+    case "start":
+      return "border-l-white/40";
+    case "finish":
+      return "border-l-emerald-300/60";
+    default:
+      return "border-l-white/20";
+  }
+}
+
 export function SidePanel({
   race,
   t,
@@ -54,8 +69,9 @@ export function SidePanel({
   const standings = standingsAt(race, t);
 
   return (
-    <aside className="flex h-full w-full flex-col border-l border-white/[0.07] bg-[#0b0b0b]/95 backdrop-blur-xl">
-      <div className="flex items-start justify-between border-b border-white/[0.07] px-5 pb-4 pt-5">
+    <aside className="relative flex h-full w-full flex-col overflow-hidden border-l border-white/[0.07] bg-[#0b0b0b]/95 backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_30%_0%,rgba(225,6,0,0.1),transparent_62%)]" />
+      <div className="relative flex items-start justify-between border-b border-white/[0.07] px-5 pb-4 pt-5">
         <div>
           <div className="flex items-center gap-2">
             <span className="relative flex h-1.5 w-1.5">
@@ -133,8 +149,8 @@ export function SidePanel({
                   key={driver.code}
                   layout="position"
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  className={`grid grid-cols-[18px_3px_36px_1fr_46px] items-center gap-2 rounded-md px-1.5 py-[5px] ${
-                    isLeader ? "bg-white/[0.035]" : ""
+                  className={`group grid grid-cols-[18px_3px_36px_1fr_52px] items-center gap-2 rounded-md px-1.5 py-[5px] transition-colors hover:bg-white/[0.03] ${
+                    isLeader ? "bg-white/[0.04]" : ""
                   }`}
                 >
                   <span
@@ -145,8 +161,8 @@ export function SidePanel({
                     {position}
                   </span>
                   <span
-                    className="h-3.5 w-[3px] rounded-full"
-                    style={{ backgroundColor: driver.color }}
+                    className="h-3.5 w-[3px] rounded-full transition-shadow group-hover:shadow-[0_0_10px_currentColor]"
+                    style={{ backgroundColor: driver.color, color: driver.color }}
                   />
                   <span className="text-[11px] font-semibold tracking-wide text-white/90">
                     {driver.code}
@@ -155,12 +171,25 @@ export function SidePanel({
                     {lastName(driver.name)}
                   </span>
                   <span
-                    className="text-right font-mono text-[9px] tabular-nums text-white/30"
+                    className="flex items-center justify-end gap-1.5 font-mono text-[9px] tabular-nums text-white/30"
                     title="Stylised gap"
                   >
-                    {isLeader
-                      ? "LEADER"
-                      : `+${((position - 1) * 0.68).toFixed(1)}s`}
+                    {isLeader ? (
+                      <span className="flex items-center gap-1 text-pit-red/80">
+                        <span className="h-1 w-1 animate-soft-pulse rounded-full bg-pit-red" />
+                        LEADER
+                      </span>
+                    ) : (
+                      <>
+                        <span
+                          className="h-[2px] rounded-full bg-white/15"
+                          style={{
+                            width: `${Math.min(16, 4 + position * 0.9)}px`,
+                          }}
+                        />
+                        <span>+{((position - 1) * 0.68).toFixed(1)}s</span>
+                      </>
+                    )}
                   </span>
                 </motion.li>
               );
@@ -205,7 +234,9 @@ export function SidePanel({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2.5"
+                    className={`rounded-xl border border-l-2 border-white/[0.07] bg-white/[0.025] px-3 py-2.5 transition-colors hover:bg-white/[0.04] ${typeAccent(
+                      item.event.type,
+                    )}`}
                   >
                     <div className="mb-1.5 flex items-center justify-between gap-2">
                       <span

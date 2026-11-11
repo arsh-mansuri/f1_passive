@@ -101,6 +101,17 @@ export function LightsOut({
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/70 to-transparent" />
       </div>
 
+      <AnimatePresence>
+        {extinguished ? (
+          <motion.div
+            initial={{ opacity: 0.4 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.85, ease: "easeOut" }}
+            className="pointer-events-none absolute inset-0 z-20 bg-pit-red/25"
+          />
+        ) : null}
+      </AnimatePresence>
+
       <div className="relative z-10 flex w-full max-w-4xl flex-col items-center px-6">
         <AnimatePresence mode="wait">
           {!showTitle ? (
@@ -112,19 +123,19 @@ export function LightsOut({
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col items-center"
             >
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/35">
+              <p className="mb-4 px-2 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-white/35 sm:text-[10px] sm:tracking-[0.28em]">
                 {circuit} · {season} · Round {round}
               </p>
 
-              <div className="relative rounded-2xl border border-white/[0.1] bg-[#101010] px-5 py-5 shadow-[0_30px_120px_rgba(0,0,0,0.8)] sm:px-8 sm:py-7">
+              <div className="edge-glow relative rounded-2xl border border-white/[0.1] bg-[#101010] px-3 py-4 shadow-[0_30px_120px_rgba(0,0,0,0.8)] sm:px-8 sm:py-7">
                 <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                <div className="flex items-center gap-3 sm:gap-5">
+                <div className="flex items-center gap-2 sm:gap-5">
                   {Array.from({ length: LIGHT_COUNT }).map((_, index) => {
                     const isOn = !extinguished && lit > index;
                     return (
                       <div
                         key={index}
-                        className="relative flex h-14 w-14 items-center justify-center rounded-full border border-white/[0.06] bg-black/70 sm:h-[72px] sm:w-[72px]"
+                        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.06] bg-black/70 sm:h-[72px] sm:w-[72px]"
                       >
                         <motion.span
                           className="block rounded-full"
@@ -175,7 +186,8 @@ export function LightsOut({
               <h1 className="font-display text-[clamp(2.4rem,7.6vw,6.6rem)] uppercase leading-[0.9] text-white">
                 {eventName}
                 <br />
-                is <span className="text-pit-red">underway.</span>
+                is{" "}
+                <span className="text-pit-red text-glow-red">underway.</span>
               </h1>
               <p className="mt-7 text-[10px] font-medium uppercase tracking-[0.24em] text-white/30">
                 {circuit} · Round {round} · {season}
@@ -188,7 +200,7 @@ export function LightsOut({
       <button
         type="button"
         onClick={finish}
-        className="absolute bottom-6 right-6 rounded-full border border-white/10 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/35 transition-colors hover:border-white/25 hover:text-white/70"
+        className="absolute bottom-5 right-5 rounded-full border border-white/10 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/35 transition-colors hover:border-white/25 hover:text-white/70 sm:bottom-6 sm:right-6"
       >
         Skip intro
       </button>

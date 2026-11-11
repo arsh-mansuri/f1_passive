@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RaceTheatre } from "./RaceTheatre";
 import { RestartIcon } from "@/components/ui/icons";
+import { ScrollDrift } from "@/components/ui/ScrollDrift";
 import type { Race } from "@/lib/types";
 
 type RaceLoaderProps = {
@@ -92,12 +93,17 @@ export function RaceLoader({ src, version }: RaceLoaderProps) {
   }, [src, version, attempt]);
 
   if (state.status === "ready") {
-    return <RaceTheatre race={state.race} />;
+    return (
+      <ScrollDrift>
+        <RaceTheatre race={state.race} />
+      </ScrollDrift>
+    );
   }
 
   if (state.status === "error") {
     return (
-      <main className="flex min-h-[100dvh] items-center justify-center bg-[#070707] px-6">
+      <ScrollDrift>
+        <main className="flex min-h-[100dvh] items-center justify-center bg-[#070707] px-6">
         <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-white/[0.02] p-8 text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-pit-red">
             Timing feed lost
@@ -125,12 +131,14 @@ export function RaceLoader({ src, version }: RaceLoaderProps) {
             </Link>
           </div>
         </div>
-      </main>
+        </main>
+      </ScrollDrift>
     );
   }
 
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#070707] px-6">
+    <ScrollDrift>
+      <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#070707] px-6">
       <div className="relative grid h-16 w-16 place-items-center">
         <span className="absolute inset-0 rounded-full border border-white/[0.08]" />
         <span className="absolute inset-0 animate-spin rounded-full border border-transparent border-t-pit-red [animation-duration:1.1s]" />
@@ -142,6 +150,7 @@ export function RaceLoader({ src, version }: RaceLoaderProps) {
       <p className="mt-2 font-mono text-[10px] text-white/15">
         Establishing telemetry link
       </p>
-    </main>
+      </main>
+    </ScrollDrift>
   );
 }

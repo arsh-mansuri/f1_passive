@@ -6,13 +6,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { MiniTrack } from "@/components/marketing/MiniTrack";
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  CircuitIcon,
-  SignOutIcon,
-} from "@/components/ui/icons";
+import { ArrowRightIcon, CircuitIcon, SignOutIcon } from "@/components/ui/icons";
 import { getBrowserSupabase } from "@/lib/supabase/client";
+import { InteractiveBackground } from "@/components/ui/InteractiveBackground";
+import { Reveal, Stagger, StaggerItem } from "@/components/ui/Reveal";
+import { ScrollDrift } from "@/components/ui/ScrollDrift";
+import { RacePicker } from "@/components/dashboard/RacePicker";
 import type { RaceMeta, SessionUser } from "@/lib/types";
 
 type DashboardClientProps = {
@@ -21,6 +20,21 @@ type DashboardClientProps = {
 };
 
 const SEASON_OPTIONS = [2024, 2025, 2026];
+
+const PREVIEW_COLORS = [
+  "#27F4D2",
+  "#3671C6",
+  "#FF8000",
+  "#E8002D",
+  "#B6BABD",
+  "#64C4FF",
+];
+
+const PREVIEW_DOTS = PREVIEW_COLORS.map((color, index) => ({
+  fraction: 0.14 + index * 0.055,
+  color,
+  delay: index * 0.32,
+}));
 
 function minutesLabel(seconds: number): string {
   return `${Math.round(seconds / 60)} min`;
@@ -107,11 +121,15 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 grid-lines opacity-50" />
+        <InteractiveBackground variant="dashboard" density={0.85} fixed />
+        <div className="absolute inset-0 grid-lines grid-drift opacity-50" />
         <div className="absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-pit-red/[0.06] blur-[140px]" />
+        <div className="absolute -left-32 top-[38%] h-[30rem] w-[30rem] rounded-full bg-pit-red/[0.035] blur-[150px]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-pit-red/40 to-transparent" />
       </div>
 
-      <header className="relative z-10 border-b border-white/[0.06]">
+      <ScrollDrift className="relative z-10" intensity={0.4}>
+        <header className="relative z-10 border-b border-white/[0.06] backdrop-blur-[2px]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
           <div className="flex items-center gap-6">
             <Logo href="/dashboard" />
@@ -150,7 +168,7 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           className="grid gap-14 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-16"
         >
-          <div>
+          <div className="relative z-20">
             <p className="eyebrow mb-4">Round selection</p>
             <h1 className="font-display text-[clamp(2.6rem,5.5vw,4.6rem)] leading-[0.95] text-white">
               Choose
@@ -162,73 +180,25 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
               — no live feeds, no buffering, no waiting for the broadcast.
             </p>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
-                  Season
-                </span>
-                <div className="relative">
-                  <select
-                    value={season}
-                    onChange={(event) =>
-                      handleSeasonChange(Number(event.target.value))
-                    }
-                    className="h-12 w-full appearance-none rounded-xl border border-white/10 bg-white/[0.03] px-4 pr-10 text-sm text-white outline-none transition-colors focus:border-pit-red/60"
-                  >
-                    {SEASON_OPTIONS.map((option) => (
-                      <option key={option} value={option} className="bg-[#141414]">
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDownIcon className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
-                  Grand Prix
-                </span>
-                <div className="relative">
-                  <select
-                    value={round ?? ""}
-                    onChange={(event) =>
-                      setRound(
-                        event.target.value ? Number(event.target.value) : null,
-                      )
-                    }
-                    disabled={seasonRaces.length === 0}
-                    className="h-12 w-full appearance-none rounded-xl border border-white/10 bg-white/[0.03] px-4 pr-10 text-sm text-white outline-none transition-colors focus:border-pit-red/60 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {seasonRaces.length === 0 ? (
-                      <option value="" className="bg-[#141414]">
-                        No replays yet
-                      </option>
-                    ) : null}
-                    {seasonRaces.map((race) => (
-                      <option
-                        key={race.round}
-                        value={race.round}
-                        className="bg-[#141414]"
-                      >
-                        R{String(race.round).padStart(2, "0")} &middot; {race.eventName} &middot;{" "}
-                        {race.circuit}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDownIcon className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                </div>
-              </label>
-            </div>
+            <RacePicker
+              seasons={SEASON_OPTIONS}
+              races={races}
+              season={season}
+              round={round}
+              onSeasonChange={handleSeasonChange}
+              onRoundChange={setRound}
+            />
 
             <button
               type="button"
               onClick={() => loadRace()}
               disabled={!selected}
-              className="group mt-5 flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-pit-red text-[12px] font-semibold uppercase tracking-[0.16em] text-white shadow-red-glow-sm transition-all duration-300 hover:bg-[#ff1a12] disabled:cursor-not-allowed disabled:bg-white/[0.06] disabled:text-white/30 disabled:shadow-none"
+              className="btn-shine group mt-5 flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-pit-red text-[12px] font-semibold uppercase tracking-[0.16em] text-white shadow-red-glow-sm transition-all duration-300 hover:bg-[#ff1a12] disabled:cursor-not-allowed disabled:bg-white/[0.06] disabled:text-white/30 disabled:shadow-none"
             >
-              Load race
-              <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              <span className="relative z-[2] flex items-center gap-3">
+                Load race
+                <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </span>
             </button>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] uppercase tracking-[0.14em] text-white/25">
@@ -245,13 +215,18 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
             {selected ? (
               <motion.div
                 key={`${selected.season}-${selected.round}`}
-                initial={{ opacity: 0, scale: 0.99 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[#0e0e0e] shadow-card"
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="edge-glow relative overflow-hidden rounded-[26px] border border-white/10 bg-[#0e0e0e] shadow-card"
               >
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
                 <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-4">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                  <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pit-red opacity-60" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-pit-red" />
+                    </span>
                     Selected replay
                   </span>
                   <span className="rounded-full border border-white/10 px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-white/35">
@@ -261,11 +236,14 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
 
                 <div className="relative aspect-[1.18/1] overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_45%,rgba(225,6,0,0.09),transparent_62%)]" />
+                  <div className="pointer-events-none absolute inset-8 rounded-full border border-dashed border-white/[0.05] animate-spin-slow" />
+                  <div className="pointer-events-none absolute inset-20 rounded-full border border-dashed border-pit-red/[0.09] animate-spin-slow-reverse" />
                   <MiniTrack
                     points={selected.trackPreview}
                     className="absolute inset-0 h-full w-full p-2"
                     strokeWidth={8}
-                    dots={[]}
+                    dots={PREVIEW_DOTS}
+                    live
                   />
                   <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4">
                     <div>
@@ -282,10 +260,12 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
                     <button
                       type="button"
                       onClick={() => loadRace(selected.season, selected.round)}
-                      className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-black transition-colors hover:bg-pit-red hover:text-white"
+                      className="btn-shine group inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-black transition-colors hover:bg-pit-red hover:text-white"
                     >
-                      Enter
-                      <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                      <span className="relative z-[2] flex items-center gap-2">
+                        Enter
+                        <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -324,58 +304,68 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
         </motion.div>
 
         <section className="mt-24 border-t border-white/[0.06] pt-10">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <p className="eyebrow mb-3">The archive</p>
-              <h2 className="text-2xl font-semibold tracking-tight text-white">
-                Available replays
-              </h2>
+          <Reveal>
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <p className="eyebrow mb-3">The archive</p>
+                <h2 className="text-2xl font-semibold tracking-tight text-white">
+                  Available replays
+                </h2>
+              </div>
+              <p className="text-[11px] text-white/30">
+                Data baked at build time · no runtime API calls
+              </p>
             </div>
-            <p className="text-[11px] text-white/30">
-              Data baked at build time · no runtime API calls
-            </p>
-          </div>
+          </Reveal>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Stagger
+            className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            gap={0.05}
+          >
             {races.map((race) => (
-              <button
-                key={`${race.season}-${race.round}`}
-                type="button"
-                onClick={() => router.push(`/race/${race.season}/${race.round}`)}
-                className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-pit-red/35 hover:bg-white/[0.035]"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-white/30">
-                    {race.season} · R{String(race.round).padStart(2, "0")}
-                  </span>
-                  <ArrowRightIcon className="h-3.5 w-3.5 text-white/20 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-pit-red" />
-                </div>
-
-                <div className="relative mt-2 aspect-[2/1.05] overflow-hidden rounded-lg bg-black/20">
-                  <MiniTrack
-                    points={race.trackPreview}
-                    className="absolute inset-0 h-full w-full p-2"
-                    strokeWidth={7}
-                    showStartLine={false}
-                  />
-                </div>
-
-                <div className="mt-4 flex items-end justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {race.eventName}
-                    </p>
-                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-white/30">
-                      {race.circuit} · {race.location}
-                    </p>
+              <StaggerItem key={`${race.season}-${race.round}`} y={18}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(`/race/${race.season}/${race.round}`)
+                  }
+                  className="edge-glow hover-lift group relative h-full w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-left hover:border-pit-red/35 hover:bg-white/[0.035]"
+                >
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/0 to-transparent transition-all duration-500 group-hover:via-pit-red/70" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-white/30">
+                      {race.season} · R{String(race.round).padStart(2, "0")}
+                    </span>
+                    <ArrowRightIcon className="h-3.5 w-3.5 text-white/20 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-pit-red" />
                   </div>
-                  <span className="text-[10px] tabular-nums text-white/25">
-                    {race.laps} LAPS
-                  </span>
-                </div>
-              </button>
+
+                  <div className="relative mt-2 aspect-[2/1.05] overflow-hidden rounded-lg bg-black/20">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_55%_45%,rgba(225,6,0,0.07),transparent_65%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    <MiniTrack
+                      points={race.trackPreview}
+                      className="absolute inset-0 h-full w-full p-2 transition-transform duration-500 group-hover:scale-[1.04]"
+                      strokeWidth={7}
+                      showStartLine={false}
+                    />
+                  </div>
+
+                  <div className="mt-4 flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        {race.eventName}
+                      </p>
+                      <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-white/30">
+                        {race.circuit} · {race.location}
+                      </p>
+                    </div>
+                    <span className="text-[10px] tabular-nums text-white/25">
+                      {race.laps} LAPS
+                    </span>
+                  </div>
+                </button>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </section>
 
         <section className="mt-16 rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-6">
@@ -408,6 +398,7 @@ export function DashboardClient({ races, user }: DashboardClientProps) {
           </Link>
         </footer>
       </main>
+      </ScrollDrift>
     </div>
   );
 }

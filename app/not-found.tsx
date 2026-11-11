@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { ScrollDrift } from "@/components/ui/ScrollDrift";
 
 export default function NotFound() {
   return (
-    <main className="noise relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-pit-black px-6">
+    <ScrollDrift>
+      <main className="noise relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-pit-black px-6">
       <div className="absolute inset-0 grid-lines opacity-60" />
       <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-pit-red/[0.06] blur-[110px]" />
 
@@ -36,6 +38,7 @@ export default function NotFound() {
           </Link>
         </div>
       </div>
-    </main>
+      </main>
+    </ScrollDrift>
   );
 }

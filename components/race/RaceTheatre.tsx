@@ -7,6 +7,7 @@ import { AmbientCounter } from "./AmbientCounter";
 import { FinishOverlay } from "./FinishOverlay";
 import { LapJump } from "./LapJump";
 import { LightsOut } from "./LightsOut";
+import { PointerGlow } from "./PointerGlow";
 import { RaceCanvas, type RaceCanvasHandle } from "./RaceCanvas";
 import { RaceControls } from "./RaceControls";
 import { SidePanel } from "./SidePanel";
@@ -230,12 +231,34 @@ export function RaceTheatre({ race }: RaceTheatreProps) {
       <div className="flex h-full w-full">
         <div className="relative min-w-0 flex-1">
           <RaceCanvas ref={canvasRef} race={race} />
+          {!ambient ? <PointerGlow className="hidden md:block" /> : null}
 
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-black/75 via-black/25 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-44 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
           {!ambient ? (
-            <div className="absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
+            <div className="pointer-events-none absolute inset-3 z-[9] hidden md:block">
+              {[
+                "left-0 top-0 border-l border-t",
+                "right-0 top-0 border-r border-t",
+                "bottom-0 left-0 border-b border-l",
+                "bottom-0 right-0 border-b border-r",
+              ].map((position) => (
+                <span
+                  key={position}
+                  className={`absolute h-4 w-4 border-white/15 ${position}`}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {!ambient ? (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5"
+            >
               <div className="flex min-w-0 items-center gap-3">
                 <Logo href="/dashboard" showWordmark={false} />
                 <div className="min-w-0">
@@ -252,7 +275,7 @@ export function RaceTheatre({ race }: RaceTheatreProps) {
                 <div className="hidden sm:block">
                   <LapJump lap={lap} laps={race.laps} onJump={jumpToLap} />
                 </div>
-                <div className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-black/40 px-3 py-1.5 backdrop-blur-md">
+                <div className="edge-glow flex items-center gap-2 rounded-full border border-white/[0.08] bg-black/45 px-3 py-1.5 backdrop-blur-md">
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
                       finished
@@ -266,11 +289,11 @@ export function RaceTheatre({ race }: RaceTheatreProps) {
                     {finished ? "Flag" : playing ? "Live" : "Paused"}
                   </span>
                 </div>
-                <span className="hidden font-mono text-xs tabular-nums text-white/45 md:inline">
+                <span className="hidden rounded-full border border-white/[0.06] bg-black/30 px-3 py-1.5 font-mono text-xs tabular-nums text-white/45 backdrop-blur md:inline">
                   {clock}
                 </span>
               </div>
-            </div>
+            </motion.div>
           ) : null}
 
           {!ambient ? (
@@ -300,11 +323,24 @@ export function RaceTheatre({ race }: RaceTheatreProps) {
           )}
 
           {!ambient ? (
+            <div className="pointer-events-none absolute bottom-24 left-6 z-[14] hidden items-baseline gap-2 lg:flex">
+              <span className="font-display text-5xl leading-none text-white/[0.09]">
+                {String(lap).padStart(2, "0")}
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.2em] text-white/20">
+                / {race.laps} laps
+              </span>
+            </div>
+          ) : null}
+
+          {!ambient ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-[2px] bg-white/[0.04]">
               <div
-                className="h-full bg-pit-red/80 transition-[width] duration-150 ease-linear"
+                className="relative h-full bg-gradient-to-r from-pit-red to-[#ff4a42] shadow-[0_0_12px_rgba(225,6,0,0.6)] transition-[width] duration-150 ease-linear"
                 style={{ width: `${progress * 100}%` }}
-              />
+              >
+                <span className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white shadow-red-glow-sm" />
+              </div>
             </div>
           ) : null}
 

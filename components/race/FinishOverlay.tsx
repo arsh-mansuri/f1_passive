@@ -31,8 +31,9 @@ export function FinishOverlay({
         initial={{ opacity: 0, y: 18, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0e0e0e] shadow-card"
+        className="edge-glow relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0e0e0e] shadow-card"
       >
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-pit-red/15 blur-[80px]" />
         <div
           className="h-2 w-full opacity-20"
           style={{
@@ -46,7 +47,10 @@ export function FinishOverlay({
             Chequered flag
           </p>
           <h2 className="mt-3 font-display text-4xl leading-[0.95] text-white">
-            {winner ? winner.code : "—"} takes it.
+            <span className="text-pit-red text-glow-red">
+              {winner ? winner.code : "—"}
+            </span>{" "}
+            takes it.
           </h2>
           <p className="mt-2 text-sm text-white/45">
             {winner?.name} · {winner?.team}

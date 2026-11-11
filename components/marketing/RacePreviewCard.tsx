@@ -25,8 +25,8 @@ export function RacePreviewCard({
 }: RacePreviewCardProps) {
   return (
     <div className="relative mx-auto w-full max-w-[460px]">
-      <div className="absolute -inset-8 rounded-[40px] bg-pit-red/10 blur-3xl" />
-      <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0e0e0e] shadow-card">
+      <div className="absolute -inset-8 animate-glow-soft rounded-[40px] bg-pit-red/10 blur-3xl" />
+      <div className="edge-glow relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0e0e0e] shadow-card">
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-2.5">
             <span className="relative flex h-2 w-2">
@@ -44,6 +44,8 @@ export function RacePreviewCard({
 
         <div className="relative aspect-square overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(225,6,0,0.08),transparent_60%)]" />
+          <div className="pointer-events-none absolute inset-10 rounded-full border border-dashed border-white/[0.04] animate-spin-slow" />
+          <div className="pointer-events-none absolute inset-20 rounded-full border border-dashed border-pit-red/[0.08] animate-spin-slow-reverse" />
           <MiniTrack
             points={trackPoints}
             dots={PREVIEW_DOTS.map((dot, index) => ({
@@ -52,6 +54,7 @@ export function RacePreviewCard({
             }))}
             className="absolute inset-0 h-full w-full"
             strokeWidth={8}
+            live
           />
 
           <div className="absolute left-4 top-4 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-white/60 backdrop-blur">
